@@ -6,21 +6,16 @@ local Player = Players.LocalPlayer
 local Enabled = false
 local AirSpeed = 300
 local NormalSpeed = 16
+local SpaceHeld = false
 
 local Humanoid
 local StateConnection
-local JumpConnection
-local InputConnection
+local CharacterConnection
 
 local function Cleanup()
     if StateConnection then
         StateConnection:Disconnect()
         StateConnection = nil
-    end
-
-    if JumpConnection then
-        JumpConnection:Disconnect()
-        JumpConnection = nil
     end
 
     if Humanoid then
@@ -29,6 +24,8 @@ local function Cleanup()
 end
 
 local function Setup(Character)
+    Cleanup()
+
     Humanoid = Character:WaitForChild("Humanoid")
 
     if Humanoid.RigType ~= Enum.HumanoidRigType.R15 then
@@ -49,18 +46,6 @@ local function Setup(Character)
             Humanoid.WalkSpeed = NormalSpeed
         end
     end)
-
-    JumpConnection = UIS.JumpRequest:Connect(function()
-        if not Enabled or not Humanoid then return end
-
-        local State = Humanoid:GetState()
-
-        if State == Enum.HumanoidStateType.Freefall then
-            Humanoid:ChangeState(
-                Enum.HumanoidStateType.Jumping
-            )
-        end
-    end)
 end
 
 local function Toggle()
@@ -75,17 +60,33 @@ local function Toggle()
     end
 end
 
-InputConnection = UIS.InputBegan:Connect(function(Input, Processed)
-    if Processed then return end
-
-    if Input.KeyCode == Enum.KeyCode.E then
+UIS.InputBegan:Connect(function(Input, Processed)
+    if Input.KeyCode == Enum.KeyCode.E and not Processed then
         Toggle()
+    end
+
+    if Input.KeyCode == Enum.KeyCode.Space then
+        if SpaceHeld then return end
+        SpaceHeld = true
+
+        if not Enabled or not Humanoid then return end
+
+        if Humanoid:GetState() == Enum.HumanoidStateType.Freefall then
+            Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        end
     end
 end)
 
-Player.CharacterAdded:Connect(function(Character)
+UIS.InputEnded:Connect(function(Input)
+    if Input.KeyCode == Enum.KeyCode.Space then
+        SpaceHeld = false
+    end
+end)
+
+CharacterConnection = Player.CharacterAdded:Connect(function(Character)
     if Enabled then
-        Cleanup()
         Setup(Character)
     end
 end)
+
+print("R15 Speed System Loaded")
