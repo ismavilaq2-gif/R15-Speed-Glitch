@@ -3,15 +3,18 @@ local UIS = game:GetService("UserInputService")
 
 local Player = Players.LocalPlayer
 
+-- CONFIGURACIÓN
 local Enabled = false
 local AirSpeed = 300
+
+-- VARIABLES
+local Humanoid
+local RootPart
 local NormalSpeed = 16
 local SpaceHeld = false
-
-local Humanoid
 local StateConnection
-local CharacterConnection
 
+-- LIMPIAR PERSONAJE ANTERIOR
 local function Cleanup()
     if StateConnection then
         StateConnection:Disconnect()
@@ -23,10 +26,12 @@ local function Cleanup()
     end
 end
 
+-- CONFIGURAR PERSONAJE
 local function Setup(Character)
     Cleanup()
 
     Humanoid = Character:WaitForChild("Humanoid")
+    RootPart = Character:WaitForChild("HumanoidRootPart")
 
     if Humanoid.RigType ~= Enum.HumanoidRigType.R15 then
         return
@@ -48,6 +53,7 @@ local function Setup(Character)
     end)
 end
 
+-- ACTIVAR / DESACTIVAR
 local function Toggle()
     Enabled = not Enabled
 
@@ -55,24 +61,51 @@ local function Toggle()
         if Player.Character then
             Setup(Player.Character)
         end
+        print("Sistema ACTIVADO")
     else
         Cleanup()
+        print("Sistema DESACTIVADO")
     end
 end
 
+-- CONTROL DE TECLAS
 UIS.InputBegan:Connect(function(Input, Processed)
+
     if Input.KeyCode == Enum.KeyCode.E and not Processed then
         Toggle()
+        return
     end
 
     if Input.KeyCode == Enum.KeyCode.Space then
+
+        -- Evita saltos repetidos al mantener pulsado
         if SpaceHeld then return end
         SpaceHeld = true
 
-        if not Enabled or not Humanoid then return end
+        if not Enabled or not Humanoid or not RootPart then
+            return
+        end
 
-        if Humanoid:GetState() == Enum.HumanoidStateType.Freefall then
-            Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        -- Permite saltar nuevamente mientras está en el aire
+        if Humanoid.FloorMaterial == Enum.Material.Air then
+
+            local JumpVelocity
+
+            if Humanoid.UseJumpPower then
+                JumpVelocity = Humanoid.JumpPower
+            else
+                JumpVelocity = math.sqrt(
+                    2 * workspace.Gravity * Humanoid.JumpHeight
+                )
+            end
+
+            local Velocity = RootPart.AssemblyLinearVelocity
+
+            RootPart.AssemblyLinearVelocity = Vector3.new(
+                Velocity.X,
+                JumpVelocity,
+                Velocity.Z
+            )
         end
     end
 end)
@@ -83,10 +116,14 @@ UIS.InputEnded:Connect(function(Input)
     end
 end)
 
-CharacterConnection = Player.CharacterAdded:Connect(function(Character)
+-- DETECTAR RESPAWN
+Player.CharacterAdded:Connect(function(Character)
+    SpaceHeld = false
+
     if Enabled then
         Setup(Character)
     end
 end)
 
 print("R15 Speed System Loaded")
+print("Pulsa E para activar o desactivar")
