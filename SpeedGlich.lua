@@ -4,12 +4,13 @@ local UIS = game:GetService("UserInputService")
 local Player = Players.LocalPlayer
 
 local Enabled = false
-local Speed = 300
+local AirSpeed = 300
 local NormalSpeed = 16
 
 local Humanoid
 local StateConnection
 local JumpConnection
+local InputConnection
 
 local function Cleanup()
     if StateConnection then
@@ -41,7 +42,7 @@ local function Setup(Character)
 
         if State == Enum.HumanoidStateType.Jumping
         or State == Enum.HumanoidStateType.Freefall then
-            Humanoid.WalkSpeed = Speed
+            Humanoid.WalkSpeed = AirSpeed
 
         elseif State == Enum.HumanoidStateType.Landed
         or State == Enum.HumanoidStateType.Running then
@@ -54,8 +55,7 @@ local function Setup(Character)
 
         local State = Humanoid:GetState()
 
-        if State == Enum.HumanoidStateType.Freefall
-        or State == Enum.HumanoidStateType.Jumping then
+        if State == Enum.HumanoidStateType.Freefall then
             Humanoid:ChangeState(
                 Enum.HumanoidStateType.Jumping
             )
@@ -67,16 +67,15 @@ local function Toggle()
     Enabled = not Enabled
 
     if Enabled then
-        local Character = Player.Character
-        if Character then
-            Setup(Character)
+        if Player.Character then
+            Setup(Player.Character)
         end
     else
         Cleanup()
     end
 end
 
-UIS.InputBegan:Connect(function(Input, Processed)
+InputConnection = UIS.InputBegan:Connect(function(Input, Processed)
     if Processed then return end
 
     if Input.KeyCode == Enum.KeyCode.E then
