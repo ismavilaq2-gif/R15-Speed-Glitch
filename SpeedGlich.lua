@@ -79,7 +79,7 @@ end
 UIS.InputBegan:Connect(function(Input, Processed)
     if Processed then return end
 
-    if Input.KeyCode == Enum.KeyCode.R then
+    if Input.KeyCode == Enum.KeyCode.E then
         Toggle()
     end
 end)
