@@ -1,3 +1,4 @@
+
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 
@@ -14,7 +15,6 @@ local NormalSpeed = 16
 local SpaceHeld = false
 local StateConnection
 
--- LIMPIAR PERSONAJE ANTERIOR
 local function Cleanup()
     if StateConnection then
         StateConnection:Disconnect()
@@ -26,7 +26,6 @@ local function Cleanup()
     end
 end
 
--- CONFIGURAR PERSONAJE
 local function Setup(Character)
     Cleanup()
 
@@ -53,7 +52,6 @@ local function Setup(Character)
     end)
 end
 
--- ACTIVAR / DESACTIVAR
 local function Toggle()
     Enabled = not Enabled
 
@@ -68,17 +66,15 @@ local function Toggle()
     end
 end
 
--- CONTROL DE TECLAS
 UIS.InputBegan:Connect(function(Input, Processed)
 
-    if Input.KeyCode == Enum.KeyCode.E and not Processed then
+    -- ACTIVAR / DESACTIVAR CON R
+    if Input.KeyCode == Enum.KeyCode.R and not Processed then
         Toggle()
         return
     end
 
     if Input.KeyCode == Enum.KeyCode.Space then
-
-        -- Evita saltos repetidos al mantener pulsado
         if SpaceHeld then return end
         SpaceHeld = true
 
@@ -86,9 +82,7 @@ UIS.InputBegan:Connect(function(Input, Processed)
             return
         end
 
-        -- Permite saltar nuevamente mientras está en el aire
         if Humanoid.FloorMaterial == Enum.Material.Air then
-
             local JumpVelocity
 
             if Humanoid.UseJumpPower then
@@ -116,7 +110,6 @@ UIS.InputEnded:Connect(function(Input)
     end
 end)
 
--- DETECTAR RESPAWN
 Player.CharacterAdded:Connect(function(Character)
     SpaceHeld = false
 
@@ -126,4 +119,4 @@ Player.CharacterAdded:Connect(function(Character)
 end)
 
 print("R15 Speed System Loaded")
-print("Pulsa E para activar o desactivar")
+print("Pulsa R para activar o desactivar")
