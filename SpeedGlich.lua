@@ -6,7 +6,7 @@ local Player = Players.LocalPlayer
 
 -- CONFIGURACIÓN
 local Enabled = false
-local AirSpeed = 300
+local AirSpeed = 250
 
 -- VARIABLES
 local Humanoid
